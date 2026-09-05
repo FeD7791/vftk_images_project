@@ -1,0 +1,30 @@
+Bootstrap: docker
+From: ubuntu:22.04
+%files
+%post
+apt-get update
+
+apt-get install -y build-essential git wget ca-certificates
+apt-get install -y libgsl-dev
+apt-get install -y libopenmpi-dev
+apt-get install -y openmpi-bin
+wget -q https://github.com/Kitware/CMake/releases/download/v4.2.3/cmake-4.2.3-linux-x86_64.sh -O /tmp/cmake.sh
+chmod +x /tmp/cmake.sh
+/tmp/cmake.sh --skip-license --prefix=/usr/local
+rm /tmp/cmake.sh
+cmake --version
+git clone --branch main https://gitlab.com/andresruiz/Sparkling.git /opt/Sparkling
+cd /opt/Sparkling
+rm -rf build
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+%environment
+export PATH=/opt/Sparkling/build:$PATH
+%runscript
+cd /opt/Sparkling
+exec "$@"
+%test
+%labels
+sparkling
+0.0.2
+Repository https://gitlab.com/andresruiz/Sparkling.git

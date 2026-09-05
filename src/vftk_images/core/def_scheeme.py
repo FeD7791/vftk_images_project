@@ -252,3 +252,10 @@ class GenerateImage(ABC):
             filepath=self._workdir_def, commands=commands
         )
 
+
+    def add_tests(self, commands):
+        util.add_testing(
+            filepath=self._workdir_def,
+            commands=commands
+        )
+

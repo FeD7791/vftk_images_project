@@ -2,7 +2,7 @@ import pathlib
 
 import attrs
 
-from core import GenerateImage
+from .core import GenerateImage
 
 containers_path = pathlib.Path(__file__).parent.absolute() / "containers"
 images_path = pathlib.Path(__file__).parent.absolute() / "images"
@@ -72,82 +72,16 @@ class SparklingImage(GenerateImage):
         )
 
 
-# @attrs.define
-# class SparklingImage(GenerateImage):
+        self.add_tests(
+            commands=[
+                "test -x /opt/Sparkling/build/sparkling_box",
+                "test -x /opt/Sparkling/build/sparkling_survey",
+                "which mpirun",
+                "which mpicc"
+            ]
+        )
 
-#     def pipeline(self):
-#         """Build the complete Sparkling Apptainer image."""
 
-#         # --------------------------------------------------------------
-#         # System build dependencies
-#         # --------------------------------------------------------------
-
-#         self.add_build_tools()
-
-#         self.system_libraries(
-#             libraries={
-#                 "libgsl-dev": None,
-#                 "libopenmpi-dev": None,
-#                 "openmpi-bin": None,
-#                 "cmake": None
-#             }
-#         )
-
-#         # --------------------------------------------------------------
-#         # Sparkling source
-#         # --------------------------------------------------------------
-
-#         self.git_clone(
-#             repository_url="https://gitlab.com/andresruiz/Sparkling.git",
-#             branch="main",
-#             destination="Sparkling"
-#         )
-
-#         # --------------------------------------------------------------
-#         # Build Sparkling
-#         # --------------------------------------------------------------
-
-#         self.compile_source(
-#             commands=[
-#                 "cd /opt/Sparkling",
-#                 "rm -rf build",
-#                 "mkdir build",
-#                 "cd build",
-#                 "cmake ..",
-#                 "make -j$(nproc)",
-#             ]
-#         )
-
-#         # --------------------------------------------------------------
-#         # Runtime environment
-#         # --------------------------------------------------------------
-
-#         self.add_env_vars(
-#             vars={
-#                 "PATH": "/opt/Sparkling/build:$PATH",
-#             }
-#         )
-
-#         # --------------------------------------------------------------
-#         # Container execution
-#         # --------------------------------------------------------------
-
-#         self.add_runscript(
-#             runscript=[
-#                 'cd /opt/Sparkling',
-#                 'exec "$@"',
-#             ]
-#         )
-
-#         # --------------------------------------------------------------
-#         # Metadata
-#         # --------------------------------------------------------------
-
-#         self.add_labels(
-#             labels=[
-#                 "Repository https://gitlab.com/andresruiz/Sparkling.git",
-#             ]
-#         )
 
 gen = SparklingImage(
     project_name="sparkling",
@@ -156,5 +90,4 @@ gen = SparklingImage(
     workdir_sif=images_path,
 )
 
-gen.pipeline()
-gen.to_sif()
+

@@ -309,3 +309,11 @@ def compile_source(filepath, commands):
             header="%post",
             line=command,
         )
+
+
+def add_testing(filepath, commands:list | str):
+    write_values(
+        filepath=filepath,
+        header="%test",
+        lines=commands,
+    )

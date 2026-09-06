@@ -3,7 +3,7 @@ import pathlib
 
 import attrs
 
-from . import util
+from . import util, python_util
 
 
 @attrs.define
@@ -114,6 +114,19 @@ class GenerateImage(ABC):
             )
         
 
+    def add_native_python(self):
+        """
+        The python version depends on the ubuntu version:
+
+        Ubuntu 20.04 → Python 3.8
+        Ubuntu 22.04 → Python 3.10
+        Ubuntu 24.04 → Python 3.12
+        """
+        python_util.install_native_python(
+            filepath=self._workdir_def,
+            path=self._apptainer_dir / "python"
+        )
+
     def add_python(self, python_version):
         """Add a Python installation to the container.
 
@@ -125,7 +138,7 @@ class GenerateImage(ABC):
         util.install_python(
             filepath=self._workdir_def,
             version=python_version,
-            path=self._apptainer_dir
+            path=self._apptainer_dir / "python"
         )
 
     def add_python_lib(self, packages:dict):
@@ -138,6 +151,7 @@ class GenerateImage(ABC):
 
             The expected format is ``{package_name: version}``.
         """
+        util.install_uv(filepath=self._workdir_def)
         util.add_python_library(
             filepath=self._workdir_def,
             packages=packages,
@@ -153,6 +167,7 @@ class GenerateImage(ABC):
         util.install_build_tools(
             filepath=self._workdir_def
         )
+
 
     def system_libraries(self, libraries:dict):
         """Add system libraries to the container.
@@ -180,6 +195,21 @@ class GenerateImage(ABC):
             For example, ``{"PATH": "/opt/bin:$PATH"}``.
         """
         util.add_environment(
+            filepath=self._workdir_def,
+            variables=vars
+        )
+
+    def add_post_env_vars(self, vars):
+        """Add environment variables to the ``%post`` section.
+
+        Parameters
+        ----------
+        vars : dict
+            Mapping between environment variable names and their values.
+
+            For example, ``{"PATH": "/opt/bin:$PATH"}``.
+        """
+        util.add_post_environment(
             filepath=self._workdir_def,
             variables=vars
         )

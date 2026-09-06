@@ -147,6 +147,36 @@ def install_python(filepath, version, path="/opt/python"):
     )
 
 
+def install_uv(filepath):
+    """Install uv in the container.
+
+    Parameters
+    ----------
+    filepath : str or pathlib.PurePosixPath
+        Path to the Apptainer definition file.
+    """
+    _write_in_file(
+        filepath=filepath,
+        header="%post",
+        line=(
+            "wget -qO- https://astral.sh/uv/install.sh "
+            "| sh"
+        ),
+    )
+
+    # Es necesario mover uv a /usr/local/bin o crear un enlace porque el
+    # instalador lo coloca en /root/.local/bin, que no está necesariamente
+    # incluido en el PATH durante el %post, por lo que el comando uv no puede ser
+    # encontrado.
+
+    _write_in_file(
+        filepath=filepath,
+        header="%post",
+        line=(
+            "mv /root/.local/bin/uv /usr/local/bin/uv"
+        ),
+    )
+
 
 def _uv_install(package, version, python_path):
     """Generate a ``uv pip install`` command.
@@ -225,6 +255,33 @@ def system_libraries(filepath, packages:dict):
         _install_system_library(
             filepath=filepath, package=key, version=value
         )
+
+
+def add_post_environment(filepath, variables: dict):
+    """Add environment variables to the ``%post`` section.
+
+    Parameters
+    ----------
+    filepath : str or pathlib.PurePosixPath
+        PurePosixPath to the Apptainer definition file.
+    variables : dict
+        Mapping between environment variable names and values.
+    """
+    if not isinstance(variables, dict):
+        raise ValueError("variables should be a dict")
+
+    lines = [
+        f"export {name}={value}"
+        for name, value in variables.items()
+    ]
+
+    write_values(
+        filepath=filepath,
+        header="%post",
+        lines=lines,
+    )
+
+
 
 
 def add_environment(filepath, variables: dict):
